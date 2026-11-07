@@ -1,17 +1,19 @@
-// 占位：请按你们实际的 SQL Accounting API 替换
+const SQL_BASE = process.env.SQL_API_URL || 'https://0647a4fe3574486cdf3df1b21f022d71.sql.my/HQ_READONLY';
+const SQL_KEY = process.env.SQL_API_KEY || '8aef04a65a313f3f2662105f7d6c47e1688962a14abbdfe0754c8d568f5e08dd';
+
 export async function queryProduct(code: string) {
-  const url = process.env.SQL_API_URL;
-  const accessKey = process.env.SQL_ACCESS_KEY;
-  const secretKey = process.env.SQL_SECRET_KEY;
+  try {
+    const res = await fetch(`${SQL_BASE}/api/product?code=${encodeURIComponent(code)}`, {
+      headers: {
+        'Authorization': `Bearer ${SQL_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-  if (!url || !accessKey) {
-    // 开发时返回模拟数据
-    return { name: `模拟商品 - ${code}` };
+    if (!res.ok) return { name: null };
+    const data = await res.json();
+    return { name: data.name || data.productName || data.Description || null };
+  } catch {
+    return { name: null };
   }
-
-  // TODO: 按实际 API 文档调用
-  // const res = await fetch(`${url}/product?code=${code}`, { headers: { ... } });
-  // return res.json();
-
-  return { name: null };
 }
