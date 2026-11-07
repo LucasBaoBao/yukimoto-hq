@@ -16,7 +16,7 @@ const MEMBERS = ['Carson', 'Tong', 'Michel', 'Xuan', 'Ceci', 'Angle'];
 export default function SalesRegister() {
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
-    channel: 'Messenger',
+    channel: 'WhatsApp',
     customer: '',
     code: '',
     name: '',
@@ -87,7 +87,10 @@ export default function SalesRegister() {
             <label>日期<input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} style={inp} /></label>
             <label>渠道
               <select value={form.channel} onChange={e => setForm({...form, channel: e.target.value})} style={inp}>
-                <option>Messenger</option><option>Retail</option><option>Live</option><option>Other</option>
+                <option>Retail</option>
+                <option>Messenger</option>
+                <option>WhatsApp</option>
+                <option>Other</option>
               </select>
             </label>
             <label>顾客姓名<input value={form.customer} onChange={e => setForm({...form, customer: e.target.value})} style={inp} /></label>
