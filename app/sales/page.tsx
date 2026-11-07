@@ -11,7 +11,12 @@ function calc(net: number) {
   return { rate, total, primary, pool };
 }
 
-const MEMBERS = ['Carson', 'Tong', 'Michel', 'Xuan', 'Ceci', 'Angle'];
+const MEMBERS = [
+  { name: 'Tong', role: 'Supervisor' },
+  { name: 'Carson', role: 'SA' },
+  { name: 'Xuan', role: 'SA' },
+  { name: 'Michel', role: 'Founder' },
+];
 
 export default function SalesRegister() {
   const [form, setForm] = useState({
@@ -103,7 +108,7 @@ export default function SalesRegister() {
             <label>主责成员
               <select value={form.primary} onChange={e => setForm({...form, primary: e.target.value})} style={inp}>
                 <option value="">请选择</option>
-                {MEMBERS.map(m => <option key={m}>{m}</option>)}
+                {MEMBERS.map(m => <option key={m.name} value={m.name}>{m.name} ({m.role})</option>)}
               </select>
             </label>
           </div>
@@ -112,8 +117,8 @@ export default function SalesRegister() {
             <div style={{ fontSize: 13, marginBottom: 8 }}>共同成交成员（参与月底 Pool）</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {MEMBERS.map(m => (
-                <label key={m} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13 }}>
-                  <input type="checkbox" checked={form.co.includes(m)} onChange={() => toggleCo(m)} /> {m}
+                <label key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13 }}>
+                  <input type="checkbox" checked={form.co.includes(m.name)} onChange={() => toggleCo(m.name)} /> {m.name} ({m.role})
                 </label>
               ))}
             </div>
