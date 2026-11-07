@@ -3,6 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { calcCommission } from '@/lib/commission';
 
 export async function POST(req: Request) {
+  if (!supabase) {
+    return NextResponse.json({ error: '数据库尚未配置' }, { status: 503 });
+  }
+
   const body = await req.json();
   const {
     channel, sale_date, customer_name, product_code, product_name,
@@ -45,6 +49,10 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
+  if (!supabase) {
+    return NextResponse.json([]);
+  }
+
   const { data, error } = await supabase
     .from('sales')
     .select('*, team_members!primary_member_id(name)')
@@ -52,5 +60,5 @@ export async function GET() {
     .limit(50);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json(data || []);
 }
