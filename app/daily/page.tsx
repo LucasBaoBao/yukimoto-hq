@@ -16,9 +16,9 @@ type Sale = {
   team_members?: { name: string };
 };
 
-export default function DailySales() {
+export default function NovemberSales() {
   const [sales, setSales] = useState<Sale[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
     fetch('/api/sales')
@@ -27,9 +27,19 @@ export default function DailySales() {
       .catch(() => {});
   }, []);
 
-  const filtered = sales.filter(s => s.sale_date === date);
-  const total = filtered.reduce((sum, s) => sum + Number(s.net_amount || 0), 0);
-  const primaryTotal = filtered.reduce((sum, s) => sum + Number(s.primary_share || 0), 0);
+  const novSales = sales.filter(s => s.sale_date.startsWith('2026-11'));
+
+  const byDate: Record<string, Sale[]> = {};
+  novSales.forEach(s => {
+    if (!byDate[s.sale_date]) byDate[s.sale_date] = [];
+    byDate[s.sale_date].push(s);
+  });
+
+  const dates = Object.keys(byDate).sort();
+
+  const displaySales = selectedDate ? (byDate[selectedDate] || []) : novSales;
+  const total = displaySales.reduce((sum, s) => sum + Number(s.net_amount || 0), 0);
+  const primaryTotal = displaySales.reduce((sum, s) => sum + Number(s.primary_share || 0), 0);
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'system-ui', background: '#f7f6f3' }}>
@@ -39,22 +49,30 @@ export default function DailySales() {
         <nav style={{ display: 'grid', gap: 4 }}>
           <a href="/" style={nav}>运营总览</a>
           <a href="/sales" style={nav}>销售录入</a>
-          <a href="/daily" style={{...nav, background: '#2d2840'}}>今日销售</a>
+          <a href="/daily" style={{...nav, background: '#2d2840'}}>11月销售</a>
           <a href="/commission" style={nav}>佣金审核</a>
         </nav>
       </aside>
 
       <main style={{ flex: 1, padding: 32 }}>
         <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>YUKIMOTO / OPERATIONS</div>
-        <h1 style={{ fontSize: 32, fontWeight: 500, margin: '0 0 16px' }}>今日销售</h1>
+        <h1 style={{ fontSize: 32, fontWeight: 500, margin: '0 0 8px' }}>2026年11月销售</h1>
+        <p style={{ color: '#666', marginTop: 0 }}>从 11月1日 开始记录，即使现在才开始用也按整月结构。</p>
 
-        <div style={{ marginBottom: 16 }}>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #ddd' }} />
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+          <button onClick={() => setSelectedDate('')} style={{...btn, background: !selectedDate ? '#1e1b2e' : '#fff', color: !selectedDate ? '#fff' : '#111'}}>
+            整月
+          </button>
+          {dates.map(d => (
+            <button key={d} onClick={() => setSelectedDate(d)} style={{...btn, background: selectedDate === d ? '#1e1b2e' : '#fff', color: selectedDate === d ? '#fff' : '#111'}}>
+              {d.slice(5)}
+            </button>
+          ))}
         </div>
 
         <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
           <div style={{ background: '#fff', padding: '12px 20px', borderRadius: 8 }}>
-            <div style={{ fontSize: 12, color: '#888' }}>当日销售总额</div>
+            <div style={{ fontSize: 12, color: '#888' }}>{selectedDate ? selectedDate : '11月'} 销售总额</div>
             <div style={{ fontSize: 22 }}>RM {total.toFixed(2)}</div>
           </div>
           <div style={{ background: '#fff', padding: '12px 20px', borderRadius: 8 }}>
@@ -63,7 +81,7 @@ export default function DailySales() {
           </div>
           <div style={{ background: '#fff', padding: '12px 20px', borderRadius: 8 }}>
             <div style={{ fontSize: 12, color: '#888' }}>笔数</div>
-            <div style={{ fontSize: 22 }}>{filtered.length}</div>
+            <div style={{ fontSize: 22 }}>{displaySales.length}</div>
           </div>
         </div>
 
@@ -83,9 +101,9 @@ export default function DailySales() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
-                <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#888' }}>当天暂无销售记录</td></tr>
-              ) : filtered.map(s => (
+              {displaySales.length === 0 ? (
+                <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#888' }}>暂无 11月销售记录</td></tr>
+              ) : displaySales.map(s => (
                 <tr key={s.id} style={{ borderTop: '1px solid #eee' }}>
                   <td style={{ padding: 12 }}>{s.sale_date}</td>
                   <td style={{ padding: 12 }}>{s.channel}</td>
@@ -107,3 +125,4 @@ export default function DailySales() {
 }
 
 const nav = { padding: '10px 12px', borderRadius: 8, textDecoration: 'none', color: '#fff', fontSize: 14, display: 'block' };
+const btn = { padding: '6px 14px', borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer', fontSize: 13 };
