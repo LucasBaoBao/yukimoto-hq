@@ -39,6 +39,7 @@ export default function SalesRegister() {
   useEffect(() => {
     if (form.code.length >= 4) {
       setLoadingName(true);
+      setMessage('');
       fetch('/api/sql/product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,10 +47,18 @@ export default function SalesRegister() {
       })
         .then(r => r.json())
         .then(d => {
-          if (d.name) setForm(f => ({ ...f, name: d.name }));
+          if (d.name) {
+            setForm(f => ({ ...f, name: d.name }));
+            setMessage('');
+          } else {
+            setMessage('未找到商品名，请手动填写');
+          }
           setLoadingName(false);
         })
-        .catch(() => setLoadingName(false));
+        .catch(() => {
+          setMessage('查询失败，请手动填写');
+          setLoadingName(false);
+        });
     }
   }, [form.code]);
 
@@ -77,9 +86,8 @@ export default function SalesRegister() {
         <nav style={{ display: 'grid', gap: 4 }}>
           <a href="/" style={nav}>运营总览</a>
           <a href="/sales" style={{...nav, background: '#2d2840'}}>销售录入</a>
-          <div style={nav}>SA 轮值</div>
-          <div style={nav}>拍摄队列</div>
-          <div style={nav}>佣金审核</div>
+          <a href="/daily" style={nav}>11月销售</a>
+          <a href="/commission" style={nav}>佣金审核</a>
         </nav>
       </aside>
 
