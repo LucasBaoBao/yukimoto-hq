@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function calc(net: number) {
   if (!net || net <= 0) return null;
@@ -27,8 +27,26 @@ export default function SalesRegister() {
     notes: ''
   });
   const [message, setMessage] = useState('');
+  const [loadingName, setLoadingName] = useState(false);
 
   const c = form.amount ? calc(Number(form.amount)) : null;
+
+  useEffect(() => {
+    if (form.code.length >= 4) {
+      setLoadingName(true);
+      fetch('/api/sql/product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: form.code })
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (d.name) setForm(f => ({ ...f, name: d.name }));
+          setLoadingName(false);
+        })
+        .catch(() => setLoadingName(false));
+    }
+  }, [form.code]);
 
   function toggleCo(name: string) {
     setForm(f => ({
@@ -74,7 +92,10 @@ export default function SalesRegister() {
             </label>
             <label>顾客姓名<input value={form.customer} onChange={e => setForm({...form, customer: e.target.value})} style={inp} /></label>
             <label>货号<input value={form.code} onChange={e => setForm({...form, code: e.target.value})} style={inp} placeholder="A00222" /></label>
-            <label style={{ gridColumn: '1 / -1' }}>商品名<input value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={inp} placeholder="输入货号后可自动带出" /></label>
+            <label style={{ gridColumn: '1 / -1' }}>
+              商品名 {loadingName && <span style={{ fontSize: 12, color: '#888' }}>查询中...</span>}
+              <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} style={inp} placeholder="输入货号后自动带出" />
+            </label>
             <label>净销售额 (RM)<input type="number" step="0.01" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} style={inp} /></label>
             <label>主责成员
               <select value={form.primary} onChange={e => setForm({...form, primary: e.target.value})} style={inp}>
